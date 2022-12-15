@@ -384,12 +384,12 @@ ClientOAuth2Token.prototype.refresh = function (opts) {
   if (options.clientCredentialsInBody) {
     body.client_id = options.clientId
     body.client_secret = options.clientSecret
+  }
+
+  if (options.clientSecret) {
+    headers.Authorization = auth(options.clientId, options.clientSecret)
   } else {
-    if (options.clientSecret) {
-      headers.Authorization = auth(options.clientId, options.clientSecret)
-    } else {
-      body.client_id = options.clientId
-    }
+    body.client_id = options.clientId
   }
 
   return this.client._request(requestOptions({
@@ -653,12 +653,12 @@ CodeFlow.prototype.getToken = function (uri, opts) {
   if (options.clientCredentialsInBody) {
     body.client_id = options.clientId
     body.client_secret = options.clientSecret
+  }
+
+  if (options.clientSecret) {
+    headers.Authorization = auth(options.clientId, options.clientSecret)
   } else {
-    if (options.clientSecret) {
-      headers.Authorization = auth(options.clientId, options.clientSecret)
-    } else {
-      body.client_id = options.clientId
-    }
+    body.client_id = options.clientId
   }
 
   return this.client._request(requestOptions({
