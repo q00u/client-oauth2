@@ -373,16 +373,23 @@ ClientOAuth2Token.prototype.refresh = function (opts) {
     return Promise.reject(new Error('No refresh token'))
   }
 
-  var headers = Object.assign({}, DEFAULT_HEADERS)
+  var headers = Object.assign({}, DEFAULT_HEADERS, {
+    Authorization: auth(options.clientId, options.clientSecret)
+  })
   var body = { refresh_token: this.refreshToken, grant_type: 'refresh_token' }
 
   // `client_id`: REQUIRED, if the client is not authenticating with the
   // authorization server as described in Section 3.2.1.
   // Reference: https://tools.ietf.org/html/rfc6749#section-3.2.1
-  if (options.clientSecret) {
-    headers.Authorization = auth(options.clientId, options.clientSecret)
-  } else {
+  if (options.clientCredentialsInBody) {
     body.client_id = options.clientId
+    body.client_secret = options.clientSecret
+  } else {
+    if (options.clientSecret) {
+      headers.Authorization = auth(options.clientId, options.clientSecret)
+    } else {
+      body.client_id = options.clientId
+    }
   }
 
   return this.client._request(requestOptions({
@@ -643,10 +650,15 @@ CodeFlow.prototype.getToken = function (uri, opts) {
   // `client_id`: REQUIRED, if the client is not authenticating with the
   // authorization server as described in Section 3.2.1.
   // Reference: https://tools.ietf.org/html/rfc6749#section-3.2.1
-  if (options.clientSecret) {
-    headers.Authorization = auth(options.clientId, options.clientSecret)
-  } else {
+  if (options.clientCredentialsInBody) {
     body.client_id = options.clientId
+    body.client_secret = options.clientSecret
+  } else {
+    if (options.clientSecret) {
+      headers.Authorization = auth(options.clientId, options.clientSecret)
+    } else {
+      body.client_id = options.clientId
+    }
   }
 
   return this.client._request(requestOptions({
