@@ -1,6 +1,25 @@
 var Buffer = require('safe-buffer').Buffer
 var Querystring = require('querystring')
-var defaultRequest = require('./request')
+// var defaultRequest = require('./request')
+
+const defaultRequest = function (method, url, body, headers) {
+  console.log('client-oauth2 request:', method, url, body, headers);
+  return fetch(url, {
+    body: body,
+    method: method,
+    headers: headers
+  }).then(function (res) {
+    console.log('client-oauth2 request, res:', res);
+    return res.text()
+      .then(body => {
+        console.log('client-oauth2 res, body:', res.status, body);
+        return {
+          status: res.status,
+          body: body
+        }
+      })
+  })
+}
 
 const DEFAULT_URL_BASE = 'https://example.org/'
 
