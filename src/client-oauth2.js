@@ -170,6 +170,8 @@ function createUri (options, tokenType) {
   if (options.scopes !== undefined) {
     qs.scope = sanitizeScope(options.scopes)
   }
+  // TODO: Add 'token_access_type' for dropbox support
+  // See: https://dropbox.tech/developers/migrating-app-permissions-and-access-tokens
 
   const sep = options.authorizationUri.includes('?') ? '&' : '?'
   return options.authorizationUri + sep + Querystring.stringify(
