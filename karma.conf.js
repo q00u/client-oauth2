@@ -1,4 +1,4 @@
-var isTravis = require('is-travis')
+const isTravis = require('is-travis')
 
 /**
  * Initialize Karma with config information.

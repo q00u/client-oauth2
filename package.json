@@ -16,6 +16,7 @@
   },
   "scripts": {
     "lint": "standard",
+    "lint-fix": "standard --fix",
     "test-server-open": "PORT=7357 node test/support/server.js & echo $! > server.pid",
     "test-server-close": "if [ -f server.pid ]; then kill -9 $(cat server.pid); rm server.pid; fi",
     "test-browser": "PORT=7357 karma start --single-run",

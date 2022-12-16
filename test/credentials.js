@@ -1,10 +1,10 @@
 /* global describe, it, context */
-var expect = require('chai').expect
-var config = require('./support/config')
-var ClientOAuth2 = require('../')
+const expect = require('chai').expect
+const config = require('./support/config')
+const ClientOAuth2 = require('../')
 
 describe('credentials', function () {
-  var githubAuth = new ClientOAuth2({
+  const githubAuth = new ClientOAuth2({
     clientId: config.clientId,
     clientSecret: config.clientSecret,
     accessTokenUri: config.accessTokenUri,
@@ -24,7 +24,7 @@ describe('credentials', function () {
     })
     context('when scopes are undefined', function () {
       it('should not send scopes to an auth server', function () {
-        var authWithoutScopes = new ClientOAuth2({
+        const authWithoutScopes = new ClientOAuth2({
           clientId: config.clientId,
           clientSecret: config.clientSecret,
           accessTokenUri: config.accessTokenUri,
@@ -41,7 +41,7 @@ describe('credentials', function () {
     })
     context('when scopes is an empty array', function () {
       it('should send empty scope string to an auth server', function () {
-        var authWithoutScopes = new ClientOAuth2({
+        const authWithoutScopes = new ClientOAuth2({
           clientId: config.clientId,
           clientSecret: config.clientSecret,
           accessTokenUri: config.accessTokenUri,
@@ -59,7 +59,7 @@ describe('credentials', function () {
     })
     context('when scopes is an empty string', function () {
       it('should send empty scope string to an auth server', function () {
-        var authWithoutScopes = new ClientOAuth2({
+        const authWithoutScopes = new ClientOAuth2({
           clientId: config.clientId,
           clientSecret: config.clientSecret,
           accessTokenUri: config.accessTokenUri,
@@ -80,7 +80,7 @@ describe('credentials', function () {
       it('should be able to sign a standard request object', function () {
         return githubAuth.credentials.getToken()
           .then(function (token) {
-            var obj = token.sign({
+            const obj = token.sign({
               method: 'GET',
               url: 'http://api.github.com/user'
             })

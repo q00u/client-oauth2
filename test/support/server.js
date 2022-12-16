@@ -1,13 +1,13 @@
-var Buffer = require('safe-buffer').Buffer
-var express = require('express')
-var bodyParser = require('body-parser')
-var cors = require('cors')
-var assert = require('assert')
-var Querystring = require('querystring')
-var config = require('./config')
-var app = express()
+const Buffer = require('safe-buffer').Buffer
+const express = require('express')
+const bodyParser = require('body-parser')
+const cors = require('cors')
+const assert = require('assert')
+const Querystring = require('querystring')
+const config = require('./config')
+const app = express()
 
-var credentials = 'Basic ' + Buffer.from(config.clientId + ':' + config.clientSecret).toString('base64')
+const credentials = 'Basic ' + Buffer.from(config.clientId + ':' + config.clientSecret).toString('base64')
 
 app.options('/login/oauth/access_token', cors())
 
@@ -16,7 +16,7 @@ app.post(
   cors(),
   bodyParser.urlencoded({ extended: false }),
   function (req, res) {
-    var grantType = req.body.grant_type
+    const grantType = req.body.grant_type
 
     // Typically required header when parsing bodies.
     assert.strictEqual(typeof req.headers['content-length'], 'string')
