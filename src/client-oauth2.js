@@ -1,5 +1,6 @@
-var Buffer = require('safe-buffer').Buffer
-var Querystring = require('querystring')
+const Buffer = require('safe-buffer').Buffer
+const Querystring = require('querystring')
+const fetch = require('cross-fetch');
 // var defaultRequest = require('./request')
 
 const defaultRequest = function (method, url, body, headers) {
