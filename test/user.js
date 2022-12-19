@@ -66,9 +66,9 @@ describe('user', function () {
       expect(user.expired()).to.be.equal(true)
     })
     it('should work with Date strings', function () {
-      user.expiresIn(new Date(Date.now() + 10000).toString())
+      user.expiresIn(new Date(Date.now() + 10000).toISOString())
       expect(user.expired()).to.be.equal(false)
-      user.expiresIn(new Date(Date.now() - 10000).toString())
+      user.expiresIn(new Date(Date.now() - 10000).toISOString())
       expect(user.expired()).to.be.equal(true)
     })
   })

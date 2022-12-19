@@ -68,7 +68,7 @@ declare namespace ClientOAuth2 {
     expires: Date;
 
     constructor(client: ClientOAuth2, data: Data);
-    expiresIn(duration: number | Date): Date;
+    expiresIn(duration: number | Date | string): Date;
     sign<T extends RequestObject>(requestObj: T): T;
     refresh(options?: Options): Promise<Token>;
     expired(): boolean;

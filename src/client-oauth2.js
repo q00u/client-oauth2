@@ -4,16 +4,13 @@ const fetch = require('cross-fetch');
 // var defaultRequest = require('./request')
 
 const defaultRequest = function (method, url, body, headers) {
-  console.log('client-oauth2 request:', method, url, body, headers)
   return fetch(url, {
     body,
     method,
     headers
   }).then(function (res) {
-    console.log('client-oauth2 request, res:', res)
     return res.text()
       .then(body => {
-        console.log('client-oauth2 res, body:', res.status, body)
         return {
           status: res.status,
           body
@@ -332,17 +329,17 @@ function ClientOAuth2Token (client, data) {
 /**
  * Expire the token after some time.
  *
- * @param  {number|Date} duration Seconds from now to expire, or a date to expire on.
+ * @param  {number|Date|string} duration Seconds from now to expire, or a date to expire on.
  * @return {Date}
  */
 ClientOAuth2Token.prototype.expiresIn = function (duration) {
-  if (typeof duration === 'number' || typeof Number(duration) === 'number') {
+  if (duration instanceof Date) {
+    this.expires = new Date(duration.getTime())
+  } else if (typeof duration === 'string' && !isNaN(Date.parse(duration)) && new Date(Date.parse(duration)).toString() !== 'Invalid Date' ) {
+    this.expires = new Date(Date.parse(duration))
+  } else if (typeof duration === 'number' || typeof Number(duration) === 'number') {
     this.expires = new Date()
     this.expires.setSeconds(this.expires.getSeconds() + Number(duration))
-  } else if (duration instanceof Date) {
-    this.expires = new Date(duration.getTime())
-  } else if (new Date(duration) !== 'Invalid Date' && !isNaN(new Date(duration))) {
-    this.expires = new Date(duration)
   } else {
     throw new TypeError('Unknown duration: ' + duration)
   }
