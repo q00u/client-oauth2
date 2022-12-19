@@ -1,6 +1,6 @@
 {
-  "name": "client-oauth2",
-  "version": "4.3.3",
+  "name": "@q00u/client-oauth2",
+  "version": "4.4.0",
   "description": "Straight-forward execution of OAuth 2.0 flows and authenticated API requests",
   "main": "src/client-oauth2.js",
   "typings": "index.d.ts",
@@ -11,8 +11,7 @@
   ],
   "browser": {
     "buffer": false,
-    "safe-buffer": false,
-    "./src/request/index.js": "./src/request/browser.js"
+    "safe-buffer": false
   },
   "scripts": {
     "lint": "standard",
@@ -28,19 +27,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/mulesoft/js-client-oauth2.git"
+    "url": "git://github.com/q00u/client-oauth2.git"
   },
   "keywords": [
     "oauth2",
     "authentication",
     "token"
   ],
-  "author": "MuleSoft, Inc.",
+  "contributors": [
+    "MuleSoft, Inc. (https://github.com/mulesoft-labs)",
+    "Phoenix Gabriel (https://github.com/q00u)"
+  ],
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/mulesoft/js-client-oauth2/issues"
+    "url": "https://github.com/q00u/client-oauth2/issues"
   },
-  "homepage": "https://github.com/mulesoft/js-client-oauth2",
+  "homepage": "https://github.com/q00u/client-oauth2",
   "devDependencies": {
     "body-parser": "^1.20.1",
     "browserify": "^17.0.0",
