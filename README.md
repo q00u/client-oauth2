@@ -2,15 +2,15 @@
 
 [![NPM version][npm-image]][npm-url]
 [![NPM downloads][downloads-image]][downloads-url]
-[![Build status][travis-image]][travis-url]
-[![Greenkeeper badge](https://badges.greenkeeper.io/mulesoft/js-client-oauth2.svg)](https://greenkeeper.io/)
+[![Build status][build-image]][build-url]
+![Dependencies](https://img.shields.io/librariesio/release/npm/@q00u/client-oauth2)
 
 > Straight-forward execution of OAuth 2.0 flows and authenticated API requests. 7.58 kB in browsers, after minification and gzipping, 75% from `url` and `querystring` dependencies.
 
 ## Installation
 
 ```sh
-npm install client-oauth2 --save
+npm install @q00u/client-oauth2 --save
 ```
 
 ## Usage
@@ -18,7 +18,7 @@ npm install client-oauth2 --save
 The module supports executing all the various OAuth 2.0 flows in any JavaScript environment. To authenticate you need to create an instance of the module for your API.
 
 ```javascript
-var ClientOAuth2 = require('client-oauth2')
+var ClientOAuth2 = require('@q00u/client-oauth2')
 
 var githubAuth = new ClientOAuth2({
   clientId: 'abc',
@@ -189,9 +189,9 @@ Requires an ES5 environment with global `Promise` and `Object.assign`.
 
 Apache 2.0
 
-[npm-image]: https://img.shields.io/npm/v/client-oauth2.svg?style=flat
-[npm-url]: https://npmjs.org/package/client-oauth2
-[downloads-image]: https://img.shields.io/npm/dm/client-oauth2.svg?style=flat
-[downloads-url]: https://npmjs.org/package/client-oauth2
-[travis-image]: https://img.shields.io/travis/mulesoft/js-client-oauth2.svg?style=flat
-[travis-url]: https://travis-ci.org/mulesoft/js-client-oauth2
+[npm-image]: https://img.shields.io/npm/v/@q00u/client-oauth2
+[npm-url]: https://npmjs.org/package/@q00u/client-oauth2
+[downloads-image]: https://img.shields.io/npm/dm/@q00u/client-oauth2
+[downloads-url]: https://npmjs.org/package/@q00u/client-oauth2
+[build-image]: https://img.shields.io/github/actions/workflow/status/q00u/client-oauth2/build.yml
+[build-url]: https://github.com/q00u/client-oauth2/releases
