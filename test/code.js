@@ -1,12 +1,12 @@
 /* global describe, it, context */
-var expect = require('chai').expect
-var config = require('./support/config')
-var ClientOAuth2 = require('../')
+const expect = require('chai').expect
+const config = require('./support/config')
+const ClientOAuth2 = require('../')
 
 describe('code', function () {
-  var uri = '/auth/callback?code=' + config.code + '&state=' + config.state
+  const uri = '/auth/callback?code=' + config.code + '&state=' + config.state
 
-  var githubAuth = new ClientOAuth2({
+  const githubAuth = new ClientOAuth2({
     clientId: config.clientId,
     clientSecret: config.clientSecret,
     accessTokenUri: config.accessTokenUri,
@@ -26,7 +26,7 @@ describe('code', function () {
     })
     context('when scopes are undefined', function () {
       it('should not include scope in the uri', function () {
-        var authWithoutScopes = new ClientOAuth2({
+        const authWithoutScopes = new ClientOAuth2({
           clientId: config.clientId,
           clientSecret: config.clientSecret,
           accessTokenUri: config.accessTokenUri,
@@ -42,7 +42,7 @@ describe('code', function () {
       })
     })
     it('should include empty scopes array as an empty string', function () {
-      var authWithEmptyScopes = new ClientOAuth2({
+      const authWithEmptyScopes = new ClientOAuth2({
         clientId: config.clientId,
         clientSecret: config.clientSecret,
         accessTokenUri: config.accessTokenUri,
@@ -58,7 +58,7 @@ describe('code', function () {
       )
     })
     it('should include empty scopes string as an empty string', function () {
-      var authWithEmptyScopes = new ClientOAuth2({
+      const authWithEmptyScopes = new ClientOAuth2({
         clientId: config.clientId,
         clientSecret: config.clientSecret,
         accessTokenUri: config.accessTokenUri,
@@ -103,8 +103,27 @@ describe('code', function () {
         })
     })
 
+    it('should request the token with body credentials', function () {
+      const opts = { clientCredentialsInBody: true }
+      return githubAuth.code.getToken(uri, opts)
+        .then(function (user) {
+          expect(user).to.an.instanceOf(ClientOAuth2.Token)
+          expect(user.accessToken).to.equal(config.accessToken)
+          expect(user.tokenType).to.equal('bearer')
+        })
+    })
+
+    it('uri pathname and redirectUri pathname should not have to match', function () {
+      return githubAuth.code.getToken(uri, {
+        redirectUri: config.redirectUri + '/someOtherJunk'
+      })
+        .then(function (user) {
+          expect(user.accessToken).to.equal(config.accessToken)
+        })
+    })
+
     it('should reject with auth errors', function () {
-      var errored = false
+      let errored = false
 
       return githubAuth.code.getToken(config.redirectUri + '?error=invalid_request')
         .catch(function (err) {
@@ -122,7 +141,7 @@ describe('code', function () {
       it('should be able to sign a standard request object', function () {
         return githubAuth.code.getToken(uri)
           .then(function (token) {
-            var obj = token.sign({
+            const obj = token.sign({
               method: 'GET',
               url: 'http://api.github.com/user'
             })

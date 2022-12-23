@@ -1,12 +1,12 @@
 /* global describe, it, context */
-var expect = require('chai').expect
-var config = require('./support/config')
-var ClientOAuth2 = require('../')
+const expect = require('chai').expect
+const config = require('./support/config')
+const ClientOAuth2 = require('../')
 
 describe('token', function () {
-  var uri = config.redirectUri + '#access_token=' + config.accessToken + '&token_type=bearer'
+  const uri = config.redirectUri + '#access_token=' + config.accessToken + '&token_type=bearer'
 
-  var githubAuth = new ClientOAuth2({
+  const githubAuth = new ClientOAuth2({
     clientId: config.clientId,
     authorizationUri: config.authorizationUri,
     authorizationGrants: ['token'],
@@ -24,7 +24,7 @@ describe('token', function () {
     })
     context('when scopes are undefined', function () {
       it('should not include scope in the url', function () {
-        var authWithoutScopes = new ClientOAuth2({
+        const authWithoutScopes = new ClientOAuth2({
           clientId: config.clientId,
           authorizationUri: config.authorizationUri,
           authorizationGrants: ['token'],
@@ -38,7 +38,7 @@ describe('token', function () {
       })
     })
     it('should include empty scopes array as an empty string', function () {
-      var authWithoutScopes = new ClientOAuth2({
+      const authWithoutScopes = new ClientOAuth2({
         clientId: config.clientId,
         authorizationUri: config.authorizationUri,
         authorizationGrants: ['token'],
@@ -52,7 +52,7 @@ describe('token', function () {
       )
     })
     it('should include empty scopes string as an empty string', function () {
-      var authWithoutScopes = new ClientOAuth2({
+      const authWithoutScopes = new ClientOAuth2({
         clientId: config.clientId,
         authorizationUri: config.authorizationUri,
         authorizationGrants: ['token'],
@@ -98,7 +98,7 @@ describe('token', function () {
       it('should be able to sign a standard request object', function () {
         return githubAuth.token.getToken(uri)
           .then(function (token) {
-            var obj = token.sign({
+            const obj = token.sign({
               method: 'GET',
               url: 'http://api.github.com/user'
             })

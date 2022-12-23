@@ -1,10 +1,26 @@
-var Buffer = require('safe-buffer').Buffer
-var Querystring = require('querystring')
-var defaultRequest = require('./request')
+const Buffer = require('safe-buffer').Buffer
+const Querystring = require('querystring')
+const fetch = require('cross-fetch');
+
+const defaultRequest = function (method, url, body, headers) {
+  return fetch(url, {
+    body,
+    method,
+    headers
+  }).then(function (res) {
+    return res.text()
+      .then(body => {
+        return {
+          status: res.status,
+          body
+        }
+      })
+  })
+}
 
 const DEFAULT_URL_BASE = 'https://example.org/'
 
-var btoa
+let btoa
 if (typeof Buffer === 'function') {
   btoa = btoaBuffer
 } else {
@@ -19,7 +35,7 @@ module.exports = ClientOAuth2
 /**
  * Default headers for executing OAuth 2.0 flows.
  */
-var DEFAULT_HEADERS = {
+const DEFAULT_HEADERS = {
   Accept: 'application/json, application/x-www-form-urlencoded',
   'Content-Type': 'application/x-www-form-urlencoded'
 }
@@ -29,7 +45,7 @@ var DEFAULT_HEADERS = {
  *
  * Reference: http://tools.ietf.org/html/rfc6749#section-4.1.2.1
  */
-var ERROR_RESPONSES = {
+const ERROR_RESPONSES = {
   invalid_request: [
     'The request is missing a required parameter, includes an',
     'invalid parameter value, includes a parameter more than',
@@ -98,8 +114,8 @@ function btoaBuffer (string) {
  * @param {...string} props
  */
 function expects (obj) {
-  for (var i = 1; i < arguments.length; i++) {
-    var prop = arguments[i]
+  for (let i = 1; i < arguments.length; i++) {
+    const prop = arguments[i]
 
     if (obj[prop] == null) {
       throw new TypeError('Expected "' + prop + '" to exist')
@@ -114,12 +130,12 @@ function expects (obj) {
  * @return {string}
  */
 function getAuthError (body) {
-  var message = ERROR_RESPONSES[body.error] ||
+  const message = ERROR_RESPONSES[body.error] ||
     body.error_description ||
     body.error
 
   if (message) {
-    var err = new Error(message)
+    const err = new Error(message)
     err.body = body
     err.code = 'EAUTH'
     return err
@@ -170,6 +186,8 @@ function createUri (options, tokenType) {
   if (options.scopes !== undefined) {
     qs.scope = sanitizeScope(options.scopes)
   }
+  // TODO: Add 'token_access_type' for dropbox support
+  // See: https://dropbox.tech/developers/migrating-app-permissions-and-access-tokens
 
   const sep = options.authorizationUri.includes('?') ? '&' : '?'
   return options.authorizationUri + sep + Querystring.stringify(
@@ -243,7 +261,7 @@ ClientOAuth2.Token = ClientOAuth2Token
  * @return {Object}
  */
 ClientOAuth2.prototype.createToken = function (access, refresh, type, data) {
-  var options = Object.assign(
+  const options = Object.assign(
     {},
     data,
     typeof access === 'string' ? { access_token: access } : access,
@@ -262,9 +280,9 @@ ClientOAuth2.prototype.createToken = function (access, refresh, type, data) {
  * @return {Promise}
  */
 ClientOAuth2.prototype._request = function (options) {
-  var url = options.url
-  var body = Querystring.stringify(options.body)
-  var query = Querystring.stringify(options.query)
+  let url = options.url
+  const body = Querystring.stringify(options.body)
+  const query = Querystring.stringify(options.query)
 
   if (query) {
     url += (url.indexOf('?') === -1 ? '?' : '&') + query
@@ -272,15 +290,15 @@ ClientOAuth2.prototype._request = function (options) {
 
   return this.request(options.method, url, body, options.headers)
     .then(function (res) {
-      var body = parseResponseBody(res.body)
-      var authErr = getAuthError(body)
+      const body = parseResponseBody(res.body)
+      const authErr = getAuthError(body)
 
       if (authErr) {
         return Promise.reject(authErr)
       }
 
       if (res.status < 200 || res.status >= 399) {
-        var statusErr = new Error('HTTP status ' + res.status)
+        const statusErr = new Error('HTTP status ' + res.status)
         statusErr.status = res.status
         statusErr.body = res.body
         statusErr.code = 'ESTATUS'
@@ -304,21 +322,23 @@ function ClientOAuth2Token (client, data) {
   this.accessToken = data.access_token
   this.refreshToken = data.refresh_token
 
-  this.expiresIn(Number(data.expires_in))
+  this.expiresIn(data.expires_in)
 }
 
 /**
  * Expire the token after some time.
  *
- * @param  {number|Date} duration Seconds from now to expire, or a date to expire on.
+ * @param  {number|Date|string} duration Seconds from now to expire, or a date to expire on.
  * @return {Date}
  */
 ClientOAuth2Token.prototype.expiresIn = function (duration) {
-  if (typeof duration === 'number') {
-    this.expires = new Date()
-    this.expires.setSeconds(this.expires.getSeconds() + duration)
-  } else if (duration instanceof Date) {
+  if (duration instanceof Date) {
     this.expires = new Date(duration.getTime())
+  } else if (typeof duration === 'string' && !isNaN(Date.parse(duration)) && new Date(Date.parse(duration)).toString() !== 'Invalid Date' ) {
+    this.expires = new Date(Date.parse(duration))
+  } else if (typeof duration === 'number' || typeof Number(duration) === 'number') {
+    this.expires = new Date()
+    this.expires.setSeconds(this.expires.getSeconds() + Number(duration))
   } else {
     throw new TypeError('Unknown duration: ' + duration)
   }
@@ -342,10 +362,10 @@ ClientOAuth2Token.prototype.sign = function (requestObject) {
   if (this.tokenType === 'bearer') {
     requestObject.headers.Authorization = 'Bearer ' + this.accessToken
   } else {
-    var parts = requestObject.url.split('#')
-    var token = 'access_token=' + this.accessToken
-    var url = parts[0].replace(/[?&]access_token=[^&#]/, '')
-    var fragment = parts[1] ? '#' + parts[1] : ''
+    const parts = requestObject.url.split('#')
+    const token = 'access_token=' + this.accessToken
+    const url = parts[0].replace(/[?&]access_token=[^&#]/, '')
+    const fragment = parts[1] ? '#' + parts[1] : ''
 
     // Prepend the correct query string parameter to the url.
     requestObject.url = url + (url.indexOf('?') > -1 ? '&' : '?') + token + fragment
@@ -366,19 +386,26 @@ ClientOAuth2Token.prototype.sign = function (requestObject) {
  * @return {Promise}
  */
 ClientOAuth2Token.prototype.refresh = function (opts) {
-  var self = this
-  var options = Object.assign({}, this.client.options, opts)
+  const self = this
+  const options = Object.assign({}, this.client.options, opts)
 
   if (!this.refreshToken) {
     return Promise.reject(new Error('No refresh token'))
   }
 
-  var headers = Object.assign({}, DEFAULT_HEADERS)
-  var body = { refresh_token: this.refreshToken, grant_type: 'refresh_token' }
+  const headers = Object.assign({}, DEFAULT_HEADERS, {
+    Authorization: auth(options.clientId, options.clientSecret)
+  })
+  const body = { refresh_token: this.refreshToken, grant_type: 'refresh_token' }
 
   // `client_id`: REQUIRED, if the client is not authenticating with the
   // authorization server as described in Section 3.2.1.
   // Reference: https://tools.ietf.org/html/rfc6749#section-3.2.1
+  if (options.clientCredentialsInBody) {
+    body.client_id = options.clientId
+    body.client_secret = options.clientSecret
+  }
+
   if (options.clientSecret) {
     headers.Authorization = auth(options.clientId, options.clientSecret)
   } else {
@@ -388,8 +415,8 @@ ClientOAuth2Token.prototype.refresh = function (opts) {
   return this.client._request(requestOptions({
     url: options.accessTokenUri,
     method: 'POST',
-    headers: headers,
-    body: body
+    headers,
+    body
   }, options))
     .then(function (data) {
       return self.client.createToken(Object.assign({}, self.data, data))
@@ -425,12 +452,12 @@ function OwnerFlow (client) {
  * @return {Promise}
  */
 OwnerFlow.prototype.getToken = function (username, password, opts) {
-  var self = this
-  var options = Object.assign({}, this.client.options, opts)
+  const self = this
+  const options = Object.assign({}, this.client.options, opts)
 
   const body = {
-    username: username,
-    password: password,
+    username,
+    password,
     grant_type: 'password'
   }
   if (options.scopes !== undefined) {
@@ -443,7 +470,7 @@ OwnerFlow.prototype.getToken = function (username, password, opts) {
     headers: Object.assign({}, DEFAULT_HEADERS, {
       Authorization: auth(options.clientId, options.clientSecret)
     }),
-    body: body
+    body
   }, options))
     .then(function (data) {
       return self.client.createToken(data)
@@ -468,7 +495,7 @@ function TokenFlow (client) {
  * @return {string}
  */
 TokenFlow.prototype.getUri = function (opts) {
-  var options = Object.assign({}, this.client.options, opts)
+  const options = Object.assign({}, this.client.options, opts)
 
   return createUri(options, 'token')
 }
@@ -481,9 +508,9 @@ TokenFlow.prototype.getUri = function (opts) {
  * @return {Promise}
  */
 TokenFlow.prototype.getToken = function (uri, opts) {
-  var options = Object.assign({}, this.client.options, opts)
-  var url = typeof uri === 'object' ? uri : new URL(uri, DEFAULT_URL_BASE)
-  var expectedUrl = new URL(options.redirectUri, DEFAULT_URL_BASE)
+  const options = Object.assign({}, this.client.options, opts)
+  const url = typeof uri === 'object' ? uri : new URL(uri, DEFAULT_URL_BASE)
+  const expectedUrl = new URL(options.redirectUri, DEFAULT_URL_BASE)
 
   if (typeof url.pathname === 'string' && url.pathname !== expectedUrl.pathname) {
     return Promise.reject(
@@ -500,13 +527,13 @@ TokenFlow.prototype.getToken = function (uri, opts) {
   // Extract data from both the fragment and query string. The fragment is most
   // important, but the query string is also used because some OAuth 2.0
   // implementations (Instagram) have a bug where state is passed via query.
-  var data = Object.assign(
+  const data = Object.assign(
     {},
     typeof url.search === 'string' ? Querystring.parse(url.search.substr(1)) : (url.search || {}),
     typeof url.hash === 'string' ? Querystring.parse(url.hash.substr(1)) : (url.hash || {})
   )
 
-  var err = getAuthError(data)
+  const err = getAuthError(data)
 
   // Check if the query string was populated with a known error.
   if (err) {
@@ -540,8 +567,8 @@ function CredentialsFlow (client) {
  * @return {Promise}
  */
 CredentialsFlow.prototype.getToken = function (opts) {
-  var self = this
-  var options = Object.assign({}, this.client.options, opts)
+  const self = this
+  const options = Object.assign({}, this.client.options, opts)
 
   expects(options, 'clientId', 'clientSecret', 'accessTokenUri')
 
@@ -559,7 +586,7 @@ CredentialsFlow.prototype.getToken = function (opts) {
     headers: Object.assign({}, DEFAULT_HEADERS, {
       Authorization: auth(options.clientId, options.clientSecret)
     }),
-    body: body
+    body
   }, options))
     .then(function (data) {
       return self.client.createToken(data)
@@ -584,7 +611,7 @@ function CodeFlow (client) {
  * @return {string}
  */
 CodeFlow.prototype.getUri = function (opts) {
-  var options = Object.assign({}, this.client.options, opts)
+  const options = Object.assign({}, this.client.options, opts)
 
   return createUri(options, 'code')
 }
@@ -598,31 +625,31 @@ CodeFlow.prototype.getUri = function (opts) {
  * @return {Promise}
  */
 CodeFlow.prototype.getToken = function (uri, opts) {
-  var self = this
-  var options = Object.assign({}, this.client.options, opts)
+  const self = this
+  const options = Object.assign({}, this.client.options, opts)
 
   expects(options, 'clientId', 'accessTokenUri')
 
-  var url = typeof uri === 'object' ? uri : new URL(uri, DEFAULT_URL_BASE)
+  const url = typeof uri === 'object' ? uri : new URL(uri, DEFAULT_URL_BASE)
 
-  if (
-    typeof options.redirectUri === 'string' &&
-    typeof url.pathname === 'string' &&
-    url.pathname !== (new URL(options.redirectUri, DEFAULT_URL_BASE)).pathname
-  ) {
-    return Promise.reject(
-      new TypeError('Redirected path should match configured path, but got: ' + url.pathname)
-    )
-  }
+  // if (
+  //   typeof options.redirectUri === 'string' &&
+  //   typeof url.pathname === 'string' &&
+  //   url.pathname !== (new URL(options.redirectUri, DEFAULT_URL_BASE)).pathname
+  // ) {
+  //   return Promise.reject(
+  //     new TypeError('Redirected path should match configured path, but got: ' + url.pathname)
+  //   )
+  // }
 
   if (!url.search || !url.search.substr(1)) {
     return Promise.reject(new TypeError('Unable to process uri: ' + uri))
   }
 
-  var data = typeof url.search === 'string'
+  const data = typeof url.search === 'string'
     ? Querystring.parse(url.search.substr(1))
     : (url.search || {})
-  var err = getAuthError(data)
+  const err = getAuthError(data)
 
   if (err) {
     return Promise.reject(err)
@@ -637,12 +664,17 @@ CodeFlow.prototype.getToken = function (uri, opts) {
     return Promise.reject(new TypeError('Missing code, unable to request token'))
   }
 
-  var headers = Object.assign({}, DEFAULT_HEADERS)
-  var body = { code: data.code, grant_type: 'authorization_code', redirect_uri: options.redirectUri }
+  const headers = Object.assign({}, DEFAULT_HEADERS)
+  const body = { code: data.code, grant_type: 'authorization_code', redirect_uri: options.redirectUri }
 
   // `client_id`: REQUIRED, if the client is not authenticating with the
   // authorization server as described in Section 3.2.1.
   // Reference: https://tools.ietf.org/html/rfc6749#section-3.2.1
+  if (options.clientCredentialsInBody) {
+    body.client_id = options.clientId
+    body.client_secret = options.clientSecret
+  }
+
   if (options.clientSecret) {
     headers.Authorization = auth(options.clientId, options.clientSecret)
   } else {
@@ -652,8 +684,8 @@ CodeFlow.prototype.getToken = function (uri, opts) {
   return this.client._request(requestOptions({
     url: options.accessTokenUri,
     method: 'POST',
-    headers: headers,
-    body: body
+    headers,
+    body
   }, options))
     .then(function (data) {
       return self.client.createToken(data)
@@ -679,9 +711,9 @@ function JwtBearerFlow (client) {
  * @return {Promise}
  */
 JwtBearerFlow.prototype.getToken = function (token, opts) {
-  var self = this
-  var options = Object.assign({}, this.client.options, opts)
-  var headers = Object.assign({}, DEFAULT_HEADERS)
+  const self = this
+  const options = Object.assign({}, this.client.options, opts)
+  const headers = Object.assign({}, DEFAULT_HEADERS)
 
   expects(options, 'accessTokenUri')
 
@@ -703,8 +735,8 @@ JwtBearerFlow.prototype.getToken = function (token, opts) {
   return this.client._request(requestOptions({
     url: options.accessTokenUri,
     method: 'POST',
-    headers: headers,
-    body: body
+    headers,
+    body
   }, options))
     .then(function (data) {
       return self.client.createToken(data)

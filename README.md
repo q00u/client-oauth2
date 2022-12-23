@@ -115,7 +115,7 @@ app.get('/auth/github/callback', function (req, res) {
 
 ### [Implicit Grant](http://tools.ietf.org/html/rfc6749#section-4.2)
 
->  The implicit grant type is used to obtain access tokens (it does not support the issuance of refresh tokens) and is optimized for public clients known to operate a particular redirection URI. These clients are typically implemented in a browser using a scripting language such as JavaScript.
+> The implicit grant type is used to obtain access tokens (it does not support the issuance of refresh tokens) and is optimized for public clients known to operate a particular redirection URI. These clients are typically implemented in a browser using a scripting language such as JavaScript.
 
 1. Redirect user to `githubAuth.token.getUri([ options ])`.
 2. Parse response uri for the access token using `githubAuth.token.getToken(uri [, options ])`.

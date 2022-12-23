@@ -1,10 +1,10 @@
 /* global describe, it */
-var expect = require('chai').expect
-var config = require('./support/config')
-var ClientOAuth2 = require('../')
+const expect = require('chai').expect
+const config = require('./support/config')
+const ClientOAuth2 = require('../')
 
 describe('user', function () {
-  var githubAuth = new ClientOAuth2({
+  const githubAuth = new ClientOAuth2({
     clientId: config.clientId,
     clientSecret: config.clientSecret,
     accessTokenUri: config.accessTokenUri,
@@ -14,13 +14,13 @@ describe('user', function () {
     scopes: 'notifications'
   })
 
-  var user = githubAuth.createToken(config.accessToken, config.refreshToken, 'bearer')
+  const user = githubAuth.createToken(config.accessToken, config.refreshToken, 'bearer')
 
   user.expiresIn(0)
 
   describe('#sign', function () {
     it('should be able to sign a standard request object', function () {
-      var obj = user.sign({
+      const obj = user.sign({
         method: 'GET',
         url: 'http://api.github.com/user',
         headers: {
@@ -57,6 +57,18 @@ describe('user', function () {
     it('should return true when token is expired', function () {
       user.expiresIn(-10)
 
+      expect(user.expired()).to.be.equal(true)
+    })
+    it('should work with Date objects', function () {
+      user.expiresIn(new Date(Date.now() + 10000))
+      expect(user.expired()).to.be.equal(false)
+      user.expiresIn(new Date(Date.now() - 10000))
+      expect(user.expired()).to.be.equal(true)
+    })
+    it('should work with Date strings', function () {
+      user.expiresIn(new Date(Date.now() + 10000).toISOString())
+      expect(user.expired()).to.be.equal(false)
+      user.expiresIn(new Date(Date.now() - 10000).toISOString())
       expect(user.expired()).to.be.equal(true)
     })
   })

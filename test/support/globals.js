@@ -1,4 +1,4 @@
-var Buffer = require('safe-buffer').Buffer
+const Buffer = require('safe-buffer').Buffer
 
 Object.assign = Object.assign || require('object-assign')
 global.Promise = global.Promise || require('es6-promise').Promise
